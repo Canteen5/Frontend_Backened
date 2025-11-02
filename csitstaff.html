@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Me Canteen — Staff Dashboard</title>
+<style>
+  :root{
+    --orange-600:#ff8c42;--orange-500:#ff9a5a;--off:#fff8ee;--soft:#fffaf5;--muted:#6b7280;
+    --glass: rgba(255,255,255,0.6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+  body{min-height:100vh;background:linear-gradient(180deg,#fff5ea 0%,#fffaf3 60%);display:flex;align-items:flex-start;justify-content:center;padding:28px;color:#111827}
+  .app{width:100%;max-width:1200px;display:flex;gap:20px}
+  /* Sidebar */
+  .sidebar{width:260px;background:var(--off);border-radius:14px;padding:22px;box-shadow:0 10px 30px rgba(2,6,23,0.06);flex-shrink:0;position:sticky;top:28px;height:calc(100vh - 56px);display:flex;flex-direction:column}
+  .brand{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--orange-600),var(--orange-500));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+  .brand h3{font-size:16px;margin:0}
+  .profile{display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,250,245,0.95));margin-bottom:14px}
+  .avatar{width:64px;height:64px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,140,66,0.12)}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .meta h4{margin:0;font-size:15px}
+  .meta p{margin:0;font-size:13px;color:var(--muted)}
+  nav{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .nav-btn{padding:10px 12px;border-radius:10px;display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;color:#374151;border:1px solid transparent;transition:transform .18s,box-shadow .18s}
+  .nav-btn:hover{transform:translateY(-4px);box-shadow:0 8px 22px rgba(255,140,66,0.08)}
+  .nav-btn.active{background:linear-gradient(90deg,var(--orange-400, #ffb172),var(--orange-500));color:#fff;box-shadow:0 10px 26px rgba(255,140,66,0.12)}
+  .sidebar .cta{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+  .btn{padding:10px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn-primary{background:linear-gradient(90deg,var(--orange-500),var(--orange-600));color:#fff;box-shadow:0 10px 24px rgba(255,140,66,0.12)}
+  .btn-ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:#374151}
+
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;gap:16px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px}
+  .title{font-size:20px;font-weight:800;background:linear-gradient(90deg,var(--orange-600),var(--orange-500));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .controls{display:flex;align-items:center;gap:12px}
+  .search{display:flex;align-items:center;gap:8px;background:#fff;padding:8px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.03)}
+  .search input{border:0;outline:0;font-size:14px;width:240px}
+  .notif{position:relative;cursor:pointer}
+  .notif img{width:34px;height:34px;filter:contrast(.95)}
+  .notif.blink img{animation:bellBlink 1s infinite}
+  @keyframes bellBlink{50%{opacity:.45;transform:translateY(-3px)}}
+  .notif-badge{position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;padding:3px 7px;border-radius:999px;font-weight:800;font-size:12px;display:none}
+
+  /* categories */
+  .categories{display:flex;gap:10px;flex-wrap:wrap}
+  .cat-btn{padding:8px 12px;border-radius:8px;border:1px solid #ffedd5;background:transparent;cursor:pointer;font-weight:700;color:#444;transition:transform .18s}
+  .cat-btn.active{background:linear-gradient(90deg,var(--orange-500),var(--orange-400));color:#fff;transform:scale(1.04)}
+
+  /* grid */
+  .panel{background:var(--soft);padding:16px;border-radius:12px;box-shadow:0 8px 28px rgba(2,6,23,0.03)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:1050px){.grid{grid-template-columns:repeat(2,1fr)}.sidebar{display:none}.main{margin-left:0}}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}.search input{width:150px}}
+
+  .card{background:#fff;border-radius:14px;padding:14px;text-align:center;position:relative;transition:transform .22s,box-shadow .22s;overflow:visible}
+  .card:hover{transform:translateY(-8px);box-shadow:0 18px 40px rgba(2,6,23,0.06)}
+  .food-icon{width:120px;height:120px;border-radius:14px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#fff6ef);box-shadow:0 12px 30px rgba(255,180,120,0.05);overflow:hidden}
+  .food-icon img{width:100%;height:100%;object-fit:cover;display:block}
+  .food-name{font-weight:800;color:#111827;margin-bottom:6px}
+  .food-price{color:var(--muted);margin-bottom:10px}
+  .actions{display:flex;justify-content:center;gap:8px}
+  .toggle{border-radius:999px;padding:8px 12px;border:0;font-weight:800;cursor:pointer}
+  .toggle.in{background:linear-gradient(90deg,#34d399,#10b981);color:#fff}
+  .toggle.out{background:#e5e7eb;color:#374151}
+  .edit{background:#fff;border:1px solid rgba(0,0,0,0.06);padding:8px 10px;border-radius:8px;cursor:pointer}
+
+  .badge{position:absolute;left:12px;top:12px;padding:6px 8px;border-radius:8px;color:#fff;font-weight:800;font-size:12px;box-shadow:0 10px 26px rgba(255,140,66,0.08)}
+  .badge.in{background:linear-gradient(90deg,#34d399,#10b981)}
+  .badge.out{background:linear-gradient(90deg,#ef4444,#f97316)}
+
+  /* orders panel */
+  .orders{position:fixed;right:-380px;top:0;width:360px;height:100%;background:var(--off);box-shadow:-6px 0 24px rgba(2,6,23,0.08);transition:right .36s;z-index:80;padding:20px;overflow:auto}
+  .orders.open{right:20px}
+  .orders h3{margin-bottom:6px}
+  .order-item{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
+  .order-item strong{display:block;font-weight:800}
+  .order-time{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* toast */
+  .toast-wrap{position:fixed;right:22px;bottom:22px;display:flex;flex-direction:column;gap:10px;z-index:90}
+  .toast{background:linear-gradient(90deg,#111827,#374151);color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 14px 36px rgba(2,6,23,0.2);opacity:0;transform:translateY(12px);animation:toastIn .38s forwards}
+  @keyframes toastIn{to{opacity:1;transform:none}}
+
+  /* small */
+  .small{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <!-- ding sound -->
+  <audio id="ding" preload="auto" src="https://cdn.pixabay.com/download/audio/2021/09/15/audio_55127e6c18.mp3?filename=notification-3-183874.mp3"></audio>
+
+  <div class="app" role="application">
+    <!-- sidebar -->
+    <aside class="sidebar" aria-label="sidebar">
+      <div class="brand">
+        <div class="logo">CSIT</div>
+        <div>
+          <h3>CSIT Canteen</h3>
+          <div class="small">Staff Dashboard</div>
+        </div>
+      </div>
+
+      <div class="profile">
+        <div class="avatar"><img src="https://i.pravatar.cc/150?img=12" alt="avatar"></div>
+        <div class="meta">
+          <h4 id="staffName">Sidharth</h4>
+          <p id="staffEmail">sidhh.csitcanteen@snacksync.com</p>
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-btn active" id="navDash" onclick="switchTab('dash')">Dashboard</div>
+        <div class="nav-btn" id="navOrders" onclick="toggleOrders()">Orders</div>
+        <div style="height:1px;background:linear-gradient(90deg,transparent,#f7e6d6,transparent);margin:12px 0;border-radius:2px"></div>
+      </nav>
+
+      <div class="cta">
+        <button class="btn btn-primary" onclick="openAdd()">+ Add Food</button>
+        <button class="btn btn-ghost" onclick="simulate()">Simulate Order</button>
+        <div class="small" style="margin-top:8px">Tip: Double-click a food card to simulate 1 order for it.</div>
+      </div>
+    </aside>
+
+    <!-- main -->
+    <main class="main" role="main">
+      <div class="topbar">
+        <div>
+          <div class="title">Manage Items • CSIT Canteen</div>
+          <div class="small">Search, categorize, toggle stock and serve orders</div>
+        </div>
+
+        <div class="controls">
+          <div class="search">
+            <svg width="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#9ca3af" stroke-width="1.8"/></svg>
+            <input id="search" placeholder="Search food (ex: chole, maggi)"> 
+          </div>
+
+          <div class="notif" id="bell" title="Open orders" onclick="openOrders()">
+            <img src="https://cdn-icons-png.flaticon.com/512/1827/1827349.png" alt="bell">
+            <div class="notif-badge" id="badge">0</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="openAdd()">+ Add</button>
+        </div>
+      </div>
+
+      <div class="categories" role="tablist" aria-label="categories">
+        <button class="cat-btn active" data-cat="all" onclick="setCat(this)">All</button>
+        <button class="cat-btn" data-cat="snacks" onclick="setCat(this)">Snacks</button>
+        <button class="cat-btn" data-cat="meals" onclick="setCat(this)">Meals</button>
+        <button class="cat-btn" data-cat="south" onclick="setCat(this)">South Indian</button>
+        <button class="cat-btn" data-cat="beverages" onclick="setCat(this)">Beverages</button>
+        <button class="cat-btn" data-cat="desserts" onclick="setCat(this)">Desserts</button>
+      </div>
+
+      <section class="panel" id="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-weight:800">Food Items</div>
+          <div class="small" id="count">0 items</div>
+        </div>
+
+        <div class="grid" id="grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- orders panel -->
+    <aside class="orders" id="ordersPanel" aria-hidden="true">
+      <h3>🧾 Recent Orders</h3>
+      <div id="ordersList"></div>
+    </aside>
+  </div>
+
+  <!-- toast container -->
+  <div class="toast-wrap" id="toastWrap" aria-live="assertive"></div>
+
+<script>
+/* ====== Image URLs mapping come from your list ====== */
+const IMAGES = {
+  "Chips Packet":"https://m.media-amazon.com/images/I/71HyeSkXm0L._SL1500_.jpg",
+  "Patties":"https://i.ytimg.com/vi/vURqZcvTQ0I/maxresdefault.jpg",
+  "Paneer Roll":"https://tse3.mm.bing.net/th/id/OIP.8KdZ3qzY5Xpxck3c0uZKyAHaGu?pid=Api&P=0&h=180",
+  "Veg Maggi":"https://tse3.mm.bing.net/th/id/OIP.ZUTiAsCcB7ekZB1E6bi7qwHaD4?pid=Api&P=0&h=180",
+  "Chole Kulcha":"https://tse1.mm.bing.net/th/id/OIP.CKXQ-mJJ9VVUw880ORoKZQHaFS?pid=Api&P=0&h=180",
+  "Idli Sambar":"https://tse4.mm.bing.net/th/id/OIP.NGZoswdjlS2QHycF1EMEewHaFj?pid=Api&P=0&h=180",
+  "Pav Bhaji":"https://tse2.mm.bing.net/th/id/OIP.fRZW1j0fLNdRzYyxRcu8wgHaFj?pid=Api&P=0&h=180",
+  "Masala Dosa":"https://tse3.mm.bing.net/th/id/OIP._AQ3Z-yV0IjBI-9H0x5m-wHaE8?pid=Api&P=0&h=180",
+  "Chai":"https://tse2.mm.bing.net/th/id/OIP.IpWyCuznUAH3gLKdu4mlLQHaE8?pid=Api&P=0&h=180",
+  "Coffee":"https://tse2.mm.bing.net/th/id/OIP.IpWyCuznUAH3gLKdu4mlLQHaE8?pid=Api&P=0&h=180",
+  "Ice Cream":"https://tse3.mm.bing.net/th/id/OIP.YUs8gRqzSv2TUSmIQbRz6gHaHa?pid=Api&P=0&h=180",
+  "Burger":"https://tse3.mm.bing.net/th/id/OIP.xfqMO09n8G0LX5nU0n7bVQHaEK?pid=Api&P=0&h=180",
+  "Coke":"https://png.pngtree.com/png-clipart/20231116/original/pngtree-coca-cola-bottled-drink-isolated-photo-png-image_13575918.png"
+};
+
+/* ====== initial foods list (uses your images) ====== */
+function id(){ return 'f_' + Math.random().toString(36).slice(2,9) }
+const LS='me_canteen_images_v1';
+const defaultFoods = [
+  { id:id(), name:"Chips Packet", price:20, category:"snacks", img:IMAGES["Chips Packet"], inStock:true },
+  { id:id(), name:"Patties", price:30, category:"snacks", img:IMAGES["Patties"], inStock:true },
+  { id:id(), name:"Paneer Roll", price:55, category:"snacks", img:IMAGES["Paneer Roll"], inStock:true },
+  { id:id(), name:"Veg Maggi", price:35, category:"snacks", img:IMAGES["Veg Maggi"], inStock:true },
+  { id:id(), name:"Chole Kulcha", price:60, category:"meals", img:IMAGES["Chole Kulcha"], inStock:true },
+  { id:id(), name:"Idli Sambar", price:40, category:"south", img:IMAGES["Idli Sambar"], inStock:true },
+  { id:id(), name:"Pav Bhaji", price:65, category:"meals", img:IMAGES["Pav Bhaji"], inStock:true },
+  { id:id(), name:"Masala Dosa", price:70, category:"south", img:IMAGES["Masala Dosa"], inStock:true },
+  { id:id(), name:"Chai", price:12, category:"beverages", img:IMAGES["Chai"], inStock:true },
+  { id:id(), name:"Coffee", price:18, category:"beverages", img:IMAGES["Coffee"], inStock:true },
+  { id:id(), name:"Ice Cream", price:30, category:"desserts", img:IMAGES["Ice Cream"], inStock:true },
+  { id:id(), name:"Burger", price:80, category:"meals", img:IMAGES["Burger"], inStock:true },
+  { id:id(), name:"Coke", price:35, category:"beverages", img:IMAGES["Coke"], inStock:true }
+];
+
+let foods = JSON.parse(localStorage.getItem(LS) || 'null') || defaultFoods.slice();
+let orders = [];
+let unseen = 0;
+let currentCat = 'all';
+
+/* DOM refs */
+const grid = document.getElementById('grid');
+const countEl = document.getElementById('count');
+const search = document.getElementById('search');
+const bell = document.getElementById('bell');
+const badge = document.getElementById('badge');
+const ordersPanel = document.getElementById('ordersPanel');
+const ordersList = document.getElementById('ordersList');
+const toastWrap = document.getElementById('toastWrap');
+const ding = document.getElementById('ding');
+
+/* helpers */
+function save(){ localStorage.setItem(LS, JSON.stringify(foods)) }
+function formatR(u){ return '₹ ' + Number(u).toFixed(0) }
+function escape(s){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m])) }
+
+/* render */
+function render(){
+  const q = (search.value || '').trim().toLowerCase();
+  grid.innerHTML = '';
+  const filtered = foods.filter(f => {
+    if(currentCat !== 'all' && f.category !== currentCat) return false;
+    if(q && !f.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  countEl.textContent = `${filtered.length} items`;
+  filtered.forEach(item => {
+    const card = document.createElement('div'); card.className = 'card';
+    card.innerHTML = `
+      <div class="badge ${item.inStock ? 'in' : 'out'}">${item.inStock ? 'Available' : 'Out'}</div>
+      <div class="food-icon"><img src="${escape(item.img)}" alt="${escape(item.name)}"></div>
+      <div class="food-name">${escape(item.name)}</div>
+      <div class="food-price">${formatR(item.price)}</div>
+      <div class="actions">
+        <button class="toggle ${item.inStock ? 'in' : 'out'}" onclick="toggleStock('${item.id}')">${item.inStock ? 'In Stock' : 'Out of Stock'}</button>
+        <button class="edit" onclick="edit('${item.id}')">Edit</button>
+      </div>
+    `;
+    // double click to simulate an order for that item
+    card.addEventListener('dblclick', () => simulate(item.name, 1));
+    grid.appendChild(card);
+  });
+}
+
+/* search & categories */
+search.addEventListener('input', render);
+function setCat(btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  render();
+}
+
+/* add/edit/toggle */
+function openAdd(){
+  const name = prompt('Food name (e.g., Paneer Roll):');
+  if(!name) return;
+  const price = prompt('Price (number):', '50');
+  if(!price) return;
+  const cat = prompt('Category (snacks/meals/south/beverages/desserts):', 'snacks');
+  const img = prompt('Image URL (paste):', IMAGES[name] || '');
+  foods.unshift({ id:id(), name, price: Number(price)||0, category: (cat||'snacks'), img: img||IMAGES[name]||'', inStock:true });
+  save(); render(); toast(`${name} added`);
+}
+function edit(id){
+  const f = foods.find(x=>x.id===id); if(!f) return;
+  const price = prompt('New price:', f.price);
+  if(price !== null){ f.price = Number(price)||f.price; save(); render(); toast(`${f.name} updated`) }
+}
+function toggleStock(id){
+  const f = foods.find(x=>x.id===id); if(!f) return;
+  f.inStock = !f.inStock; save(); render(); toast(`${f.name} is now ${f.inStock ? 'available' : 'out of stock'}`);
+}
+
+/* orders */
+function toggleOrders(){
+  const open = ordersPanel.classList.toggle('open');
+  if(open){ unseen = 0; updateBadge() }
+}
+function openOrders(){ ordersPanel.classList.add('open'); unseen = 0; updateBadge() }
+function updateBadge(){ badge.textContent = unseen; badge.style.display = unseen>0 ? 'block' : 'none'; bell.classList.toggle('blink', unseen>0) }
+
+/* simulate / real orders */
+function simulate(name, qty=1){
+  // if name provided use it else random available item
+  let foodItem;
+  if(name){
+    foodItem = foods.find(f=>f.name === name) || foods[Math.floor(Math.random()*foods.length)];
+  } else {
+    const available = foods.filter(f=>f.inStock);
+    foodItem = available.length ? available[Math.floor(Math.random()*available.length)] : foods[Math.floor(Math.random()*foods.length)];
+  }
+  const custs = ['Aarav','Riya','Kabir','Neha','Arjun','Priya','Vikram','Maya'];
+  const cust = custs[Math.floor(Math.random()*custs.length)];
+  const time = new Date().toLocaleTimeString();
+  const order = { id: 'o_' + Math.random().toString(36).slice(2,8), cust, food: foodItem.name, qty, time };
+  orders.unshift(order);
+  pushOrderToUI(order);
+  toast(`${order.cust} ordered ${order.qty}× ${order.food}`);
+  // ding & badge
+  try { ding.currentTime = 0; ding.play(); } catch(e){}
+  unseen++; updateBadge();
+}
+
+/* push order to right panel */
+function pushOrderToUI(order){
+  const div = document.createElement('div'); div.className='order-item'; div.id = order.id;
+  div.innerHTML = `<strong>${escape(order.cust)}</strong><div style="margin-top:6px">${escape(order.qty)} × ${escape(order.food)}</div><div class="order-time">${escape(order.time)}</div>`;
+  ordersList.prepend(div);
+}
+
+/* toast UI */
+function toast(msg){
+  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+  toastWrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.remove() }, 3800);
+}
+
+/* init render */
+render();
+updateBadge();
+
+/* simulate random orders every 12-20s */
+setInterval(()=>{ simulate(); }, Math.floor(Math.random()*8000)+12000);
+
+/* expose some functions to console if needed */
+window.simulate = () => simulate();
+window.openAdd = openAdd;
+window.toggleOrders = toggleOrders;
+window.openOrders = openOrders;
+window.setCat = (b)=>{ /* placeholder if needed */ };
+window.edit = edit;
+window.toggleStock = toggleStock;
+</script>
+</body>
+</html>
