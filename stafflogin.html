@@ -151,6 +151,9 @@
       font-size: 16px;
       cursor: pointer;
       transition: all 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .submit-btn:hover {
@@ -189,7 +192,6 @@
       color: #9ca3af;
       margin-top: 24px;
     }
-
   </style>
 </head>
 <body>
@@ -202,14 +204,14 @@
     <div class="content">
       <!-- Step 1: Role Selection -->
       <div id="roleSelection" class="role-selection">
-        <button class="role-btn" onclick="selectRole('Me Canteen')">Me Canteen Staff</button>
+        <button class="role-btn" onclick="selectRole('Me Canteen')">ME Canteen Staff</button>
         <button class="role-btn" onclick="selectRole('CSIT Canteen')">CSIT Canteen Staff</button>
       </div>
 
       <!-- Step 2: Login Form -->
       <div id="loginForm" class="form">
         <h2 id="canteenTitle">Staff Login</h2>
-        <p id="canteenSubtitle">Enter your credentials to continue</p>
+        <p>Enter your credentials to continue</p>
 
         <div class="input-group">
           <input type="email" id="staffEmail" placeholder="Email Address" required>
@@ -223,7 +225,8 @@
           <button>Forgot Password?</button>
         </div>
 
-        <button class="submit-btn" onclick="handleLogin()">Sign In</button>
+        <!-- Anchor tag appears dynamically here -->
+        <a id="loginLink" href="#" class="submit-btn">Sign In</a>
 
         <div class="toggle-mode">
           <span>Don't have an account?</span>
@@ -276,6 +279,13 @@
       document.getElementById('roleSelection').style.display = 'none';
       document.getElementById('loginForm').classList.add('active');
       document.getElementById('canteenTitle').textContent = `${role} Login`;
+
+      const loginLink = document.getElementById('loginLink');
+      if (role === 'Me Canteen') {
+        loginLink.href = 'mestaff.html';
+      } else if (role === 'CSIT Canteen') {
+        loginLink.href = 'csitstaff.html';
+      }
     }
 
     function toggleSignup() {
@@ -297,16 +307,6 @@
       document.getElementById('roleSelection').style.display = 'flex';
     }
 
-    function handleLogin() {
-      const email = document.getElementById('staffEmail').value;
-      const password = document.getElementById('staffPassword').value;
-      if (email && password) {
-        alert(`${currentRole} login successful!`);
-      } else {
-        alert('Please fill all fields.');
-      }
-    }
-
     function handleSignup() {
       const name = document.getElementById('staffName').value;
       const email = document.getElementById('signupEmail').value;
@@ -323,7 +323,13 @@
         return;
       }
 
-      alert(`${currentRole} account created successfully!`);
+      alert(`${currentRole} account created successfully! Redirecting...`);
+
+      if (currentRole === 'Me Canteen') {
+        window.location.href = 'mestaff.html';
+      } else if (currentRole === 'CSIT Canteen') {
+        window.location.href = 'csitstaff.html';
+      }
     }
   </script>
 </body>
